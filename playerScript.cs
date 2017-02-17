@@ -1,6 +1,8 @@
-﻿using UnityEngine;
+using UnityEngine;
 using UnityEngine.UI;
 using System.Collections;
+using System.Collections.Generic;
+
 
 public class playerScript : MonoBehaviour {
 
@@ -11,8 +13,13 @@ public class playerScript : MonoBehaviour {
 
 	//Use this for Scoring
 	public Text countText;
+	public Text countDown;
 	public int count = 0;
 	private float gameTimer = 60;
+
+	//Declare Button
+	public Button playAgainButton;
+
 
 	// Use this for initialization
 	void Start () {
@@ -27,8 +34,9 @@ public class playerScript : MonoBehaviour {
 		//set isShooting bool to default of false
 		isShooting = false;
 		setCountText ();
-
+		setCountDown ();
 	}
+
 
 	//Shoot function is IEnumerator so we can delay for seconds
 	IEnumerator Shoot() {
@@ -52,19 +60,20 @@ public class playerScript : MonoBehaviour {
 		isShooting = false;
 	}
 
+
 	// Update is called once per frame
 	void Update () {
-	
-		gameTimer -= Time.deltaTime;
 
+		gameTimer -= Time.deltaTime;
+		setCountDown ();
 		//declare a new RayCastHit
 		RaycastHit hit;
 		//draw the ray for debuging purposes (will only show up in scene view)
 		Debug.DrawRay (spawnPoint.transform.position, spawnPoint.transform.forward, Color.green);
-	
+
 		//cast a ray from the spawnpoint in the direction of its forward vector
 		if (Physics.Raycast (spawnPoint.transform.position, spawnPoint.transform.forward, out hit, 250)) {
-	
+
 			//if the raycast hits any game object where its name contains "target" and we aren't already shooting we will start the shooting coroutine
 			if (hit.collider.name.Contains ("target")) {
 				if (!isShooting && gameTimer >= 0) {
@@ -76,21 +85,21 @@ public class playerScript : MonoBehaviour {
 				hit.collider.gameObject.SetActive (false);
 				//instantiate a new target
 				GameObject target = Instantiate (Resources.Load ("target", typeof(GameObject))) as GameObject;
-	
+
 				//set the coordinates for a new vector 3
 				float randomX = UnityEngine.Random.Range (-10f, 10f);
 				float constantY = 1f;
 				float randomZ = UnityEngine.Random.Range (-10f, 10f);
 				//set the targets position equal to these new coordinates
 				target.transform.position = new Vector3 (randomX, constantY, randomZ);
-	
+
 				//if the target gets positioned less than or equal to 3 scene units away from the camera we won't be able to shoot it
 				//so keep repositioning the target until it is greater than 3 scene units away. 
 				while (Vector3.Distance (target.transform.position, Camera.main.transform.position) <= 3) {
-	
+
 					randomX = UnityEngine.Random.Range (-10f, 10f);
 					randomZ = UnityEngine.Random.Range (-10f, 10f);
-	
+
 					target.transform.position = new Vector3 (randomX, constantY, randomZ);
 				}
 			}
@@ -102,10 +111,17 @@ public class playerScript : MonoBehaviour {
 				}
 			}
 		}
+		if (gameTimer <= 0) {
+			gameTimer = 0;
+			playAgainButton.gameObject.SetActive (true);
+		}
 	}
-	
+
 	void setCountText(){
 		countText.text = "SCORE: " + count.ToString ();
 	}
-	
+
+	void setCountDown(){
+		countDown.text = "" + gameTimer.ToString ("f0");
+	}
 }
